@@ -19,21 +19,26 @@ K_MUTEX_DEFINE(led_mutex);
 #define STACK_SIZE 512
 #define PRIO 5
 
+// === Variável de modo ===
+volatile bool modo_noturno = true;
+
 // === Thread: LED Verde ===
 void thread_led_verde(void *p1, void *p2, void *p3)
 {
     while (1) {
-        k_mutex_lock(&led_mutex, K_FOREVER);
+        if (!modo_noturno){
+            k_mutex_lock(&led_mutex, K_FOREVER);
 
-        gpio_pin_set_dt(&led_verde, 1);
-        LOG_INF("Pedestre pode atravessar! (VERDE ligado)");
-        k_msleep(4000);  // 4 segundos aceso
+            gpio_pin_set_dt(&led_verde, 1);
+            LOG_INF("Pedestre pode atravessar! (VERDE ligado)");
+            k_msleep(4000);  // 4 segundos aceso
 
-        gpio_pin_set_dt(&led_verde, 0);
-        LOG_INF("Sinal verde desligado.");
+            gpio_pin_set_dt(&led_verde, 0);
+            LOG_INF("Sinal verde desligado.");
 
-        k_mutex_unlock(&led_mutex);
-        k_msleep(10);  // pequeno intervalo para alternância
+            k_mutex_unlock(&led_mutex);
+            k_msleep(10);  // pequeno intervalo para alternância
+        }
     }
 }
 
@@ -41,17 +46,31 @@ void thread_led_verde(void *p1, void *p2, void *p3)
 void thread_led_vermelho(void *p1, void *p2, void *p3)
 {
     while (1) {
-        k_mutex_lock(&led_mutex, K_FOREVER);
+        if (modo_noturno){
+            k_mutex_lock(&led_mutex, K_FOREVER);
 
-        gpio_pin_set_dt(&led_vermelho, 1);
-        LOG_INF("Pedestre deve esperar! (VERMELHO ligado)");
-        k_msleep(2000);  // 2 segundos aceso
+            gpio_pin_set_dt(&led_vermelho, 1);
+            LOG_INF("Modo Noturno Ativado!");
+            k_msleep(1000);  // 1 segundo aceso
+            gpio_pin_set_dt(&led_vermelho, 0);
+            k_msleep(1000);  // 1 segundo apagado
 
-        gpio_pin_set_dt(&led_vermelho, 0);
-        LOG_INF("Sinal vermelho desligado.");
+            k_mutex_unlock(&led_mutex);
+            k_msleep(10);
+        }
+        else {
+            k_mutex_lock(&led_mutex, K_FOREVER);
 
-        k_mutex_unlock(&led_mutex);
-        k_msleep(10);  // pequeno intervalo para alternância
+            gpio_pin_set_dt(&led_vermelho, 1);
+            LOG_INF("Pedestre deve esperar! (VERMELHO ligado)");
+            k_msleep(2000);  // 2 segundos aceso
+
+            gpio_pin_set_dt(&led_vermelho, 0);
+            LOG_INF("Sinal vermelho desligado.");
+
+            k_mutex_unlock(&led_mutex);
+            k_msleep(10);  // pequeno intervalo para alternância
+        }
     }
 }
 
