@@ -1,0 +1,12 @@
+/* Overlay para habilitar GPIOE e configurar GPIO do pedestre
+ * Não edite o DTS gerado diretamente — este overlay altera o DT em time de build.
+ */
+/ {
+    zephyr,user {
+        pedbutton-gpios = <&gpioe 20 (GPIO_ACTIVE_HIGH | GPIO_PUSH_PULL)>;
+    };
+};
+
+&gpioe {
+    status = "okay";
+};

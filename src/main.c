@@ -15,6 +15,9 @@ static const struct gpio_dt_spec led_vermelho = GPIO_DT_SPEC_GET(LED_VERMELHO_NO
 static const struct gpio_dt_spec botao = GPIO_DT_SPEC_GET(BUTTON_NODE, gpios); //PTA16
 static struct gpio_callback botao_cb_data;
 
+// === Pino para sinalizar outro microcontrolador (PTE20) via devicetree ===
+static const struct gpio_dt_spec pte20 = GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), pedbutton_gpios);
+
 // === Mutex para exclusão mútua ===
 K_MUTEX_DEFINE(led_mutex);
 
@@ -50,12 +53,21 @@ void thread_led_verde(void *p1, void *p2, void *p3)
         else if (!modo_noturno && pedido_travessia) {
             k_mutex_lock(&led_mutex, K_FOREVER);
 
-            gpio_pin_set_dt(&led_verde, 1);
-            LOG_INF("Pedido de travessia!");
-            k_msleep(15000);  // 5 segundos aceso
+            //Sinaliza para o outro MCU que houve pedido de travessia: PTE20 = 1
+            gpio_pin_set_dt(&pte20, 1);
 
+            // Liga LED verde para permitir a travessia
+            gpio_pin_set_dt(&led_verde, 1);
+            LOG_INF("Pedido de travessia - Pedestre pode atravessar!");
+            k_msleep(5000);  // 5 segundos para atravessar
+
+            // Desliga LED verde
             gpio_pin_set_dt(&led_verde, 0);
-            LOG_INF("Fim do pedido de travessia.");
+            LOG_INF("Fim do tempo de travessia.");
+
+            /* Desliga o sinal PTE20 */
+            gpio_pin_set_dt(&pte20, 0);
+
             pedido_travessia = false;
             k_mutex_unlock(&led_mutex);
 
@@ -129,6 +141,13 @@ void main(void)
     gpio_pin_configure_dt(&led_verde, GPIO_OUTPUT_INACTIVE);
     gpio_pin_configure_dt(&led_vermelho, GPIO_OUTPUT_INACTIVE);
     gpio_pin_configure_dt(&botao, GPIO_INPUT | GPIO_PULL_UP);
+
+    // Configura PTE20
+    if (!device_is_ready(pte20.port)) {
+        LOG_INF("Erro: PTE20 não está pronto");
+        return;
+    }
+    gpio_pin_configure_dt(&pte20, GPIO_OUTPUT | GPIO_OUTPUT_INIT_LOW);
 
     // configurar interrupção do botão (borda de descida = pressionado)
     gpio_pin_interrupt_configure_dt(&botao, GPIO_INT_EDGE_FALLING);
