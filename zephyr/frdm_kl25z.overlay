@@ -3,7 +3,8 @@
  */
 / {
     zephyr,user {
-        pedbutton-gpios = <&gpioe 20 (GPIO_ACTIVE_HIGH | GPIO_PUSH_PULL)>;
+        pedbutton_gpios = <&gpioe 20 GPIO_ACTIVE_HIGH>;
+        sync_gpios = <&gpioe 21 GPIO_ACTIVE_HIGH>;
     };
 };
 
