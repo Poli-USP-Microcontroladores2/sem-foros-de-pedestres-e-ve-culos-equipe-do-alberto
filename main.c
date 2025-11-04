@@ -22,6 +22,7 @@ LOG_MODULE_REGISTER(SEMAFORO_VEICULOS, LOG_LEVEL_INF);
 #define TEMPO_VERMELHO       4000    // 4 segundos
 #define TEMPO_TRAVESSIA      4000    // 4 segundos para travessia de pedestres
 #define TEMPO_PISCANTE       1000    // 1 segundo para amarelo piscante
+#define DEBOUNCE_MS 300 // Debounce de 300 ms para botões
 
 // --- Estados do sistema ---
 typedef enum {
@@ -104,6 +105,19 @@ void processar_modo_normal(void);
 void processar_modo_noturno(void);
 void processar_modo_travessia(void);
 void iniciar_transicao(sinal_transicao_t sinal);
+
+// funcao de smart sleep que acorda se pedido_travessia for true
+void smart_sleep(uint32_t duration_ms) {
+    uint32_t start_time = k_uptime_get_32();
+    while ((k_uptime_get_32() - start_time) < duration_ms) {
+        if (travessia_solicitada) {
+            // Se o pedido de travessia foi feito, saia do sleep mais cedo.
+            return;
+        }
+        // Dorme em pequenos intervalos de 100ms
+        k_msleep(15); 
+    }
+}
 
 /**
  * FUNÇÃO: controlar_led()
@@ -231,7 +245,7 @@ void thread_verde_fn(void *arg1, void *arg2, void *arg3)
                 // Verifica se realmente está no estado verde
                 if (estado_atual == ESTADO_VERDE && modo_atual == MODO_NORMAL) {
                     LOG_INF("VERDE: Aguardando %d segundos", TEMPO_VERDE / 1000);
-                    k_msleep(TEMPO_VERDE);
+                    smart_sleep(TEMPO_VERDE);
                     
                     // Solicita transição para amarelo
                     if (modo_atual == MODO_NORMAL && estado_atual == ESTADO_VERDE) {
@@ -266,7 +280,7 @@ void thread_amarelo_fn(void *arg1, void *arg2, void *arg3)
                     // Verifica se realmente está no estado amarelo
                     if (estado_atual == ESTADO_AMARELO && modo_atual == MODO_NORMAL && !transicao_controlada) {
                         LOG_INF("AMARELO: Aguardando %d segundos", TEMPO_AMARELO / 1000);
-                        k_msleep(TEMPO_AMARELO);
+                        smart_sleep(TEMPO_AMARELO);
                         
                         // Solicita transição para vermelho
                         if (modo_atual == MODO_NORMAL && estado_atual == ESTADO_AMARELO && !transicao_controlada) {
@@ -310,7 +324,7 @@ void thread_vermelho_fn(void *arg1, void *arg2, void *arg3)
                     // Verifica se realmente está no estado vermelho
                     if (estado_atual == ESTADO_VERMELHO && modo_atual == MODO_NORMAL) {
                         LOG_INF("VERMELHO: Aguardando %d segundos", TEMPO_VERMELHO / 1000);
-                        k_msleep(TEMPO_VERMELHO);
+                        smart_sleep(TEMPO_VERMELHO);
                         
                         // Solicita transição para verde
                         if (modo_atual == MODO_NORMAL && estado_atual == ESTADO_VERMELHO) {
@@ -346,6 +360,13 @@ void receber_sinal_travessia(const struct device *dev, struct gpio_callback *cb,
     ARG_UNUSED(dev);
     ARG_UNUSED(cb);
     ARG_UNUSED(pins);
+
+    static uint32_t last_sync_press = 0;
+    uint32_t now = k_uptime_get_32();
+    
+    if ((now - last_sync_press) < DEBOUNCE_MS) {
+        return;
+    }
     
     if (modo_atual == MODO_NORMAL) {
         travessia_solicitada = true;
@@ -363,6 +384,14 @@ void receber_sinal_inicializacao(const struct device *dev, struct gpio_callback 
     ARG_UNUSED(dev);
     ARG_UNUSED(cb);
     ARG_UNUSED(pins);
+
+    static uint32_t last_sync_press = 0;
+    uint32_t now = k_uptime_get_32();
+    
+    if ((now - last_sync_press) < DEBOUNCE_MS) {
+        return;
+    }
+    
     
     if (!sistema_rodando) {
         sistema_rodando = true;
@@ -370,6 +399,7 @@ void receber_sinal_inicializacao(const struct device *dev, struct gpio_callback 
         LOG_INF(">>> Threads serão criadas e sequência iniciada <<<");
     }
 }
+
 
 // --- Função principal ---
 void main(void)
@@ -393,14 +423,16 @@ void main(void)
     ret |= gpio_pin_configure_dt(&led_amarelo, GPIO_OUTPUT_INACTIVE);
     ret |= gpio_pin_configure_dt(&led_vermelho, GPIO_OUTPUT_INACTIVE);
     
-    // Configura botão inicializacao
+    // Configura botão inicializacao - PTA17
     gpio_pin_configure_dt(&button_2, GPIO_INPUT | GPIO_PULL_UP);
+    // gpio_pin_configure_dt(&button_2, GPIO_INPUT);
     gpio_pin_interrupt_configure_dt(&button_2, GPIO_INT_EDGE_FALLING);
     gpio_init_callback(&button_cb_data_2, receber_sinal_inicializacao, BIT(button_2.pin));
     gpio_add_callback(button_2.port, &button_cb_data_2);
 
-    // Configura botão travessia
+    // Configura botão travessia - PTA16
     gpio_pin_configure_dt(&button, GPIO_INPUT | GPIO_PULL_UP);
+    // gpio_pin_configure_dt(&button, GPIO_INPUT);
     gpio_pin_interrupt_configure_dt(&button, GPIO_INT_EDGE_FALLING);
     gpio_init_callback(&button_cb_data, receber_sinal_travessia, BIT(button.pin));
     gpio_add_callback(button.port, &button_cb_data);
@@ -540,4 +572,3 @@ void main(void)
         k_msleep(100);
     }
 }
-
