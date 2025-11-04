@@ -1,0 +1,18 @@
+
+>enviar e receber sinal para ativar o botão de pedestres
+
+
+>sincronização
+>>ideia: outro botão. o código do julio manda um sinal no início da main ou em uma thread cooperativa (1a coisa que o código dele vai fazer) e daí o meu código só começa a executar depois que ele receber esse sinal, até lá ele fica em standby. daí se as sequências de repetição verde, amarelo e vermelho dos códigos tiverem implementação síncrona no código, elas vão estar, necessariamente, síncronas na vida real, pois os códigos vão começar no mesmo momento
+
+
+>testes
+>>validar o funcionamento do código por meio de testes utilizando o modelo V (testes unitários, de integração e de sistema).
+>>Validação do código
+ Alunos devem elaborar planos de testes completos, seguindo o modelo V, para garantir o correto funcionamento de cada parte e do sistema completo.
+  Testes devem incluir:
+    Testes unitários (cada semáforo)
+    Testes de integração (interação entre semáforos)
+    Testes de sistema (modos noturno e botão de travessia)
+>>Os testes devem ser feitos da seguinte forma: cada um faz e documenta sua bateria de testes para o seu código. depois, em conjunto, fazemos a bateria de testes para a integração.
+
