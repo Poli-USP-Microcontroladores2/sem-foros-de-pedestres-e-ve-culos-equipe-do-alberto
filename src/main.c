@@ -72,9 +72,6 @@ void thread_led_verde(void *p1, void *p2, void *p3)
         else if (!modo_noturno && pedido_travessia) {
             k_mutex_lock(&led_mutex, K_FOREVER);
 
-            //Sinaliza para o outro MCU que houve pedido de travessia: PTE20 = 1
-            gpio_pin_set_dt(&pte20, 1);
-
             // Liga LED verde para permitir a travessia
             gpio_pin_set_dt(&led_verde, 1);
             LOG_INF("Pedido de travessia - Pedestre pode atravessar!");
@@ -118,7 +115,12 @@ void thread_led_vermelho(void *p1, void *p2, void *p3)
             gpio_pin_set_dt(&led_vermelho, 1);
             LOG_INF("Pedestre deve esperar! (VERMELHO ligado)");
             smart_sleep(4000);  // 4 segundos aceso
-
+            if (pedido_travessia){
+                //Sinaliza para o outro MCU que houve pedido de travessia: PTE20 = 1
+                gpio_pin_set_dt(&pte20, 1);
+                LOG_INF("Sinal enviado!");
+                k_msleep(1000);
+            }
             gpio_pin_set_dt(&led_vermelho, 0);
             LOG_INF("Sinal vermelho desligado.");
 
@@ -168,8 +170,8 @@ void botao_isr(const struct device *dev, struct gpio_callback *cb, uint32_t pins
 }
 
 // === Definição das threads ===
-K_THREAD_DEFINE(thread_verde_id, STACK_SIZE, thread_led_verde, NULL, NULL, NULL, PRIO, 0, 0);
-K_THREAD_DEFINE(thread_vermelho_id, STACK_SIZE, thread_led_vermelho, NULL, NULL, NULL, PRIO, 0, 0);
+K_THREAD_DEFINE(threadB_verde_id, STACK_SIZE, thread_led_verde, NULL, NULL, NULL, PRIO, 0, 0);
+K_THREAD_DEFINE(threadA_vermelho_id, STACK_SIZE, thread_led_vermelho, NULL, NULL, NULL, PRIO, 0, 0);
 
 // === Função principal ===
 void main(void)
