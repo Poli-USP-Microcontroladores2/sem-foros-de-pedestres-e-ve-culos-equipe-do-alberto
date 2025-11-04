@@ -67,6 +67,7 @@ Caso de teste 3: Botão de travessia
 - Portanto, a comunicação do botão do pedestre é direta com os dois microcontroladores, sem ser mediado pelo microcontrolador do pedestre (como ocorre com o botão de sincronização) 
 - Para acionamento dos botões, basta conectá-los ao terra do microcontrolador, não esquecendo de compartilhar os terras entre os dois microcontroladores. Neste caso, foi utilizado um pushbutton para tal, conforme registrado abaixo.
 
+<img width="1000" height="1000" alt="image" src="https://github.com/user-attachments/assets/9352d61a-5583-4e53-a3cc-e4cf6fccf97f" />
 
 - Na imagem, os LEDS não estão conectados, mas testou-se os sinais com eles.
 
@@ -88,6 +89,10 @@ Caso de teste 3: Botão de travessia
   - Conclusão: A comunicação entre o botão de pedestre e o semáforo de veículos funciona corretamente e garante segurança da travessia.
 - A comprovação dos testes feitos foi realizada por meio de um vídeo gravado com o comportamento geral do sistema, tal vídeo está anexado no arquivo .md do repositório. Ele demonstra o comportamento do botão de sincronização, a sincronização dos semáforos e o comportamento do botão de travessia, bem como as conexões feitas. 
 - Não se fez a comprovação por logs, pois os logs não iniciam ao mesmo tempo, de modo a tornar difícil a comprovação do sincronismo geral dos dois semáforos apenas por logs, uma vez que a referência temporal 0.000 não é a mesma.
+
+- Vídeo comprovativo do resultado de sincronização obtido:
+
+https://github.com/user-attachments/assets/b6f0dc70-4b4a-42b8-b8b3-39be14fe08c2
 
 
 ### Testes de sistema
