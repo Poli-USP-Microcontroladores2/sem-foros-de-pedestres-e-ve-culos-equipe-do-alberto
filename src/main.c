@@ -26,6 +26,8 @@ static struct gpio_callback sync_btn_cb_data;
 
 // === Mutex para exclusão mútua ===
 K_MUTEX_DEFINE(led_mutex);
+// === Semáforo de sincronização ===
+K_SEM_DEFINE(sync_sem, 0, 100);
 
 // === Configuração das threads ===
 #define STACK_SIZE 512
@@ -55,6 +57,9 @@ void smart_sleep(uint32_t duration_ms) {
 // === Thread: LED Verde ===
 void thread_led_verde(void *p1, void *p2, void *p3)
 {
+    k_sem_take(&sync_sem, K_FOREVER);
+    LOG_INF("Thread Verde esperando sincronização.");
+        
     while (1) {
         if (!modo_noturno && !pedido_travessia){
             k_mutex_lock(&led_mutex, K_FOREVER);
@@ -96,6 +101,8 @@ void thread_led_verde(void *p1, void *p2, void *p3)
 // === Thread: LED Vermelho ===
 void thread_led_vermelho(void *p1, void *p2, void *p3)
 {
+    k_sem_take(&sync_sem, K_FOREVER);
+    LOG_INF("Thread Verde esperando sincronização.");
     while (1) {
         if (modo_noturno){
             k_mutex_lock(&led_mutex, K_FOREVER);
@@ -144,11 +151,17 @@ void sync_btn_isr(const struct device *dev, struct gpio_callback *cb, uint32_t p
 
     LOG_INF("Botão de sincronização pressionado (ISR)");
     pedido_sync = true;
-    
+
     // Pulso de 100ms no pino de sync
     gpio_pin_set_dt(&sync_out, 1);
     k_msleep(100);
     gpio_pin_set_dt(&sync_out, 0);
+
+    // Isso "acorda" a thread que está no k_sem_take(..., K_FOREVER).
+    k_sem_give(&sync_sem); // Libera a Thread Verde
+    k_sem_give(&sync_sem); // Libera a Thread Vermelha
+    // Se no futuro você tiver N threads para sincronizar, chame N vezes.
+
 }
 
 // === Interrupção do botão ===
