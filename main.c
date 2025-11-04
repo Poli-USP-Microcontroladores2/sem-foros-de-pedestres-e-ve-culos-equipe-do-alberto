@@ -20,7 +20,7 @@ LOG_MODULE_REGISTER(SEMAFORO_VEICULOS, LOG_LEVEL_INF);
 #define TEMPO_VERDE          3000    // 3 segundos
 #define TEMPO_AMARELO        1000    // 1 segundo
 #define TEMPO_VERMELHO       4000    // 4 segundos
-#define TEMPO_TRAVESSIA      5000    // 5 segundos para travessia de pedestres
+#define TEMPO_TRAVESSIA      4000    // 4 segundos para travessia de pedestres
 #define TEMPO_PISCANTE       1000    // 1 segundo para amarelo piscante
 
 // --- Estados do sistema ---
@@ -538,3 +538,4 @@ void main(void)
         k_msleep(100);
     }
 }
+
