@@ -154,8 +154,9 @@ void sync_btn_isr(const struct device *dev, struct gpio_callback *cb, uint32_t p
 
     // Pulso de 100ms no pino de sync
     gpio_pin_set_dt(&sync_out, 1);
-    k_msleep(100);
+    k_msleep(50);
     gpio_pin_set_dt(&sync_out, 0);
+    k_msleep(50);
 
     // Isso "acorda" a thread que está no k_sem_take(..., K_FOREVER).
     k_sem_give(&sync_sem); // Libera a Thread Verde
