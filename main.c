@@ -67,7 +67,7 @@ K_MUTEX_DEFINE(mutex_estado);
 static volatile modo_operacao_t modo_atual = MODO_NORMAL;
 static volatile estado_semaforo_t estado_atual = ESTADO_VERDE;
 static volatile bool travessia_solicitada = false;
-static volatile bool sistema_rodando = true; // Enquanto eu não tiver o Júlio, isso é true. Se eu estiver com ele, é false para testar integração.
+static volatile bool sistema_rodando = false; // Enquanto eu não tiver o Júlio, isso é true. Se eu estiver com ele, é false para testar integração.
 static volatile bool transicao_controlada = false; // Para evitar transição abrupta para o modo travessia
 static uint32_t timer_travessia = 0;
 static uint32_t timer_modo = 0;
@@ -538,4 +538,5 @@ void main(void)
         k_msleep(100);
     }
 }
+
 
