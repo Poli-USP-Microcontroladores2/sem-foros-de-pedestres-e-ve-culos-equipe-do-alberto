@@ -94,16 +94,27 @@ Caso de teste 3: Botão de travessia
 
 Caso de teste 1: Ciclos dos LEDs
 
+<img width="750" height="282" alt="image" src="https://github.com/user-attachments/assets/c20b1605-e025-4bc7-8ec3-262f00c3e0dc" />
+
 
 Caso de teste 2: Modo noturno
+
+<img width="750" height="564" alt="image" src="https://github.com/user-attachments/assets/cb4665d4-a392-46cd-a0a1-d96bb458799a" />
 
 
 Caso de teste 3: Botão de travessia
 
+<img width="750" height="445" alt="image" src="https://github.com/user-attachments/assets/64a4fbfb-90eb-4cbe-b908-f28b8a4f1a51" />
+
+
 Caso de teste 4: Botão de travessia
+
+<img width="750" height="433" alt="image" src="https://github.com/user-attachments/assets/50ee1335-c45e-49e6-99da-8a466c798728" />
 
 
 Caso de teste 5: Botão de inicialização
+
+<img width="750" height="389" alt="image" src="https://github.com/user-attachments/assets/e26a95ac-9fbb-4f0f-98e7-db4ce77f6929" />
 
 
 ---
