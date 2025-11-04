@@ -368,9 +368,11 @@ void receber_sinal_travessia(const struct device *dev, struct gpio_callback *cb,
         return;
     }
     
-    if (modo_atual == MODO_NORMAL) {
+    if (modo_atual == MODO_NORMAL && (estado_atual == ESTADO_VERDE || estado_atual == ESTADO_AMARELO) ) {
         travessia_solicitada = true;
         LOG_INF(">>> SINAL RECEBIDO: Travessia solicitada <<<");
+    } else if (modo_atual == MODO_NORMAL && estado_atual == ESTADO_VERMELHO){
+        LOG_INF(">>> SINAL RECEBIDO E IGNORADO: Travessia solicitada - Já no VERMELHO <<<");
     }
 }
 
