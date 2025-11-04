@@ -364,8 +364,11 @@ void receber_sinal_inicializacao(const struct device *dev, struct gpio_callback 
     ARG_UNUSED(cb);
     ARG_UNUSED(pins);
     
-    sistema_rodando = true;
-    LOG_INF(">>> SINAL RECEBIDO: Sistema iniciado <<<");
+    if (!sistema_rodando) {
+        sistema_rodando = true;
+        LOG_INF(">>> SINAL RECEBIDO: Sistema iniciado via botão PTA17 <<<");
+        LOG_INF(">>> Threads serão criadas e sequência iniciada <<<");
+    }
 }
 
 // --- Função principal ---
@@ -406,8 +409,15 @@ void main(void)
         LOG_ERR("Falha na configuração dos LEDs");
         return;
     }
+    
+    // --- AGUARDA BOTÃO DE INICIALIZAÇÃO ---
+    LOG_INF("Aguardando botão de inicialização (PTA17)...");
+    while (!sistema_rodando) {
+    k_msleep(100);
+    }
+    LOG_INF("Sistema inicializado via botão PTA17");
 
-    // Cria as threads com prioridades adequadas
+        // Cria as threads com prioridades adequadas
     k_thread_create(&thread_controle_data, thread_controle_stack,
                    K_THREAD_STACK_SIZEOF(thread_controle_stack),
                    thread_controle_fn, NULL, NULL, NULL,
@@ -431,16 +441,8 @@ void main(void)
     LOG_INF("Threads criadas: Controle, Verde, Amarelo, Vermelho");
     LOG_INF("Modo atual: %s", modos_str[modo_atual]);
 
-    
-    // --- AGUARDA BOTÃO DE INICIALIZAÇÃO ---
-    LOG_INF("Aguardando botão de inicialização (PTA17)...");
-    while (!sistema_rodando) {
-    k_msleep(100);
-    }
-    LOG_INF("Sistema inicializado via botão PTA17");
-
-
-    // Inicia no estado verde
+    // Inicia no estado verde APÓS criar todas as threads
+    k_msleep(50); // Pequeno delay para garantir que threads iniciaram
     atualizar_estado_semaforo(ESTADO_VERDE);
     k_sem_give(&semaforo_verde); // Inicia a thread verde
 
@@ -538,5 +540,4 @@ void main(void)
         k_msleep(100);
     }
 }
-
 
