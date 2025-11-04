@@ -1,0 +1,1 @@
+﻿1. Nos testes 4 e 5, foi dito que não era necessário adicionar o debounce. No fim das contas, ele foi adicionado, mas não fez nenhuma diferença.
